@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: api-gateway
+
+server:
+  port: 8080
+
+jwt.secretkey: QX9zj1VwYb6oPkLfI2uHn8RM4kSaTeXGg7vWc3yDl0p=
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+

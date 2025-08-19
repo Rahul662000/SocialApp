@@ -1,5 +1,6 @@
 package com.rahul.socialPlatform.posts_service.Controller;
 
+import com.rahul.socialPlatform.posts_service.Auth.UserContextHolder;
 import com.rahul.socialPlatform.posts_service.Dto.PostCreateRequestDto;
 import com.rahul.socialPlatform.posts_service.Dto.PostDto;
 import com.rahul.socialPlatform.posts_service.Entity.PostEntity;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/core")
 @RequiredArgsConstructor
 public class PostController {
 
@@ -22,7 +23,9 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostDto> createPost(@RequestBody PostCreateRequestDto postCreateRequestDto , HttpServletRequest httpServletRequest){
 
-        PostDto createdPost = postService.createPost(postCreateRequestDto , 1L);
+        Long userId = UserContextHolder.getCurrentUserId();
+
+        PostDto createdPost = postService.createPost(postCreateRequestDto , userId);
 
         return new ResponseEntity<>(createdPost , HttpStatus.CREATED);
 
@@ -30,9 +33,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public ResponseEntity<PostDto> getPost(@PathVariable Long postId){
-
         PostDto post = postService.getPostById(postId);
-
         return ResponseEntity.ok(post);
 
     }

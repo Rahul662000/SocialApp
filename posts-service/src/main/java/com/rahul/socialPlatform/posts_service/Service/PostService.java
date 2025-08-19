@@ -1,5 +1,8 @@
 package com.rahul.socialPlatform.posts_service.Service;
 
+import com.rahul.socialPlatform.posts_service.Auth.UserContextHolder;
+import com.rahul.socialPlatform.posts_service.Clients.ConnectionClients;
+import com.rahul.socialPlatform.posts_service.Dto.PersonDto;
 import com.rahul.socialPlatform.posts_service.Dto.PostCreateRequestDto;
 import com.rahul.socialPlatform.posts_service.Dto.PostDto;
 import com.rahul.socialPlatform.posts_service.Entity.PostEntity;
@@ -20,6 +23,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final ModelMapper mapper;
+    private final ConnectionClients connectionClients;
 
     public PostDto createPost(PostCreateRequestDto postCreateRequestDto , Long userId) {
 
@@ -36,6 +40,12 @@ public class PostService {
     public PostDto getPostById(Long postId) {
 
         log.debug("Retrieving post with Id : {}" , postId);
+        Long userId = UserContextHolder.getCurrentUserId();
+
+        List<PersonDto> connectionLists = connectionClients.getFirstConnections();
+
+//        TODO send Notification to ALl connections
+
         return mapper.map(postRepository.findById(postId).orElseThrow(() ->
                 new ResourceNotFoundException("Post not found with id : " + postId)) , PostDto.class);
 
