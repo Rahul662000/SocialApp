@@ -1,12 +1,15 @@
 package com.rahul.socialPlatform.posts_service.Service;
 
+import com.rahul.socialPlatform.posts_service.Entity.PostEntity;
 import com.rahul.socialPlatform.posts_service.Entity.PostLikeEntity;
+import com.rahul.socialPlatform.posts_service.Events.PostLikedEvent;
 import com.rahul.socialPlatform.posts_service.Exception.BadRequestException;
 import com.rahul.socialPlatform.posts_service.Exception.ResourceNotFoundException;
 import com.rahul.socialPlatform.posts_service.Repo.PostLikeRepository;
 import com.rahul.socialPlatform.posts_service.Repo.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,16 +19,13 @@ public class PostLikeService {
 
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
+    private final KafkaTemplate<Long , PostLikedEvent> kafkaTemplate;
 
     public void likePost(Long postId , Long userId){
 
         log.info("Attempting to like the post with id : {}" , postId);
 
-        boolean exists = postRepository.existsById(postId);
-
-        if(!exists){
-            throw new ResourceNotFoundException("Post not found with id : {}" + postId);
-        }
+        PostEntity post = postRepository.findById(postId).orElseThrow(()->new ResourceNotFoundException("Post not found with id : {}" + postId));
 
         boolean alreadyLiked = postLikeRepository.existsByUserIdAndPostId(userId , postId);
 
@@ -39,6 +39,14 @@ public class PostLikeService {
         postLikeRepository.save(postLikeEntity);
 
         log.info("Post with id : {} liked successfully" , postId);
+
+        PostLikedEvent postLikedEvent = PostLikedEvent.builder()
+                                            .postId(postId)
+                                            .likedByUserId(userId)
+                                            .creatorId(post.getUserId())
+                                            .build();
+
+        kafkaTemplate.send("post-liked-topic" , postId , postLikedEvent);
 
     }
 

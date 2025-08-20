@@ -6,11 +6,13 @@ import com.rahul.socialPlatform.posts_service.Dto.PersonDto;
 import com.rahul.socialPlatform.posts_service.Dto.PostCreateRequestDto;
 import com.rahul.socialPlatform.posts_service.Dto.PostDto;
 import com.rahul.socialPlatform.posts_service.Entity.PostEntity;
+import com.rahul.socialPlatform.posts_service.Events.PostCreatedEvents;
 import com.rahul.socialPlatform.posts_service.Exception.ResourceNotFoundException;
 import com.rahul.socialPlatform.posts_service.Repo.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ModelMapper mapper;
     private final ConnectionClients connectionClients;
+    private final KafkaTemplate<Long , PostCreatedEvents> kafkaTemplate;
 
     public PostDto createPost(PostCreateRequestDto postCreateRequestDto , Long userId) {
 
@@ -33,6 +36,14 @@ public class PostService {
 
         PostEntity savedPost = postRepository.save(post);
 
+        PostCreatedEvents postCreatedEvents = PostCreatedEvents.builder()
+                                        .postId(savedPost.getId())
+                                        .creatorId(userId)
+                                        .content(savedPost.getContent())
+                                        .build();
+
+        kafkaTemplate.send("post-created-topic" , postCreatedEvents);
+
         return mapper.map(savedPost , PostDto.class);
 
     }
@@ -40,11 +51,6 @@ public class PostService {
     public PostDto getPostById(Long postId) {
 
         log.debug("Retrieving post with Id : {}" , postId);
-        Long userId = UserContextHolder.getCurrentUserId();
-
-        List<PersonDto> connectionLists = connectionClients.getFirstConnections();
-
-//        TODO send Notification to ALl connections
 
         return mapper.map(postRepository.findById(postId).orElseThrow(() ->
                 new ResourceNotFoundException("Post not found with id : " + postId)) , PostDto.class);
