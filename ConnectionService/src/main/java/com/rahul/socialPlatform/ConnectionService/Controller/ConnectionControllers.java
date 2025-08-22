@@ -25,4 +25,19 @@ public class ConnectionControllers {
         return ResponseEntity.ok(connectionServices.getFirstDegreeConnections());
     }
 
+    @PostMapping("/request/{userId}")
+    public ResponseEntity<Boolean> sendConnectionRequest(@PathVariable("userId") Long receiverId){
+        return ResponseEntity.ok(connectionServices.sendConnectionRequest(receiverId));
+    }
+
+    @PostMapping("/accept/{senderId}")
+    public ResponseEntity<Boolean> acceptConnectionRequest(@PathVariable Long senderId){
+        return ResponseEntity.ok(connectionServices.acceptConnectionRequest(senderId));
+    }
+
+    @PostMapping("/reject/{userId}")
+    public ResponseEntity<Boolean> rejectConnectionRequest(@PathVariable Long userId){
+        return ResponseEntity.ok(connectionServices.rejectConnectionRequest(userId));
+    }
+
 }

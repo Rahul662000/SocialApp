@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.rahul.socialPlatform</groupId>
-	<artifactId>Connection-Service</artifactId>
+	<artifactId>connection-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ConnectionService</name>
+	<name>connection-service</name>
 	<description>Connection Service Platform</description>
 	<url/>
 	<licenses>
